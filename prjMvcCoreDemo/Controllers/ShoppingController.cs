@@ -6,7 +6,7 @@ using System.Text.Json;
 namespace prjMvcCoreDemo.Controllers
 {
     public class ShoppingController : Controller
-    {
+    {   
         public IActionResult CartView()
         {
             if (!HttpContext.Session.Keys.Contains(CDictionary.SK_PURCHASED_PRODUCTS_LIST))
@@ -18,19 +18,27 @@ namespace prjMvcCoreDemo.Controllers
                 return RedirectToAction("List");
             return View(cart);
         }
-        public IActionResult List()
+        public IActionResult List(CKeywordViewModel vm)
         {
+            string keyword = vm.txtKeyword;
             DbDemoContext db = new DbDemoContext();
-            var datas = from c in db.TProducts
-                        select c;
+            IEnumerable<TProduct> datas = null;
+            if (string.IsNullOrEmpty(keyword))
+            {
+                datas = from p in db.TProducts
+                        select p;
+            }
+            else
+                datas = db.TProducts.Where(p => p.FName.Contains(keyword));
             return View(datas);
         }
         public ActionResult AddToCart(int? id)
         {
             if (id == null)
                 return RedirectToAction("List");
-            ViewBag.FId = id;
-            return View();
+            DbDemoContext db = new DbDemoContext();
+            TProduct prod = db.TProducts.FirstOrDefault(p => p.FId == id);           
+            return View(prod);
         }
         [HttpPost]
         public ActionResult AddToCart(CAddToCartViewModel vm)
@@ -51,6 +59,7 @@ namespace prjMvcCoreDemo.Controllers
                 CShoppingCartItem item = new CShoppingCartItem();
                 item.price = (decimal)prod.FPrice;
                 item.productId = vm.txtFId;
+                item.FName=prod.FName;
                 item.count = vm.txtCount;
                 item.product = prod;
                 cart.Add(item);

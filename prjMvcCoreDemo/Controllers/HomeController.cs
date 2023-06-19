@@ -35,7 +35,7 @@ namespace prjMvcCoreDemo.Controllers
             {
                 string json = JsonSerializer.Serialize(user);
                 HttpContext.Session.SetString(CDictionary.SK_LOINGED_USER, json);
-                return RedirectToAction("Index");
+                return RedirectToAction("List", "Shopping");
             }
             return View();
         }
